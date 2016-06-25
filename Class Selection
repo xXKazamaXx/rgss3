@@ -1,0 +1,113 @@
+#==============================================================================
+# ** Kazama - Class Selection
+#    Version 0.10
+#------------------------------------------------------------------------------
+#  * Revisions
+#  - 0.10 : Basic Development
+#------------------------------------------------------------------------------
+#  * Description
+#  Just a basic way to change classes in-game. This can also be used at the
+#  startup of games when choosing the player's class.
+#------------------------------------------------------------------------------
+#  * Features
+#  - Basic Class Selection for any in-game actor.
+#  - Option to retain EXP from other classes upon changing.
+#------------------------------------------------------------------------------
+#  * Future (Possible) Features
+#  - Class selection for the whole party at once.
+#  - More Organized scene setup. (UI feedback or ideas are welcome)
+#------------------------------------------------------------------------------
+#  * Dev Kit Required
+#  - RPG MAKER VX ACE (RUBY|RGSS3)
+#------------------------------------------------------------------------------
+#  * License
+#  - Non-Commercial
+#------------------------------------------------------------------------------
+#  * Import Script - (Do not remove this line)
+($kazama_library ||= {})[:class_selection] = true
+#==============================================================================
+
+module Kazama_Class_Selection
+
+	# How many classes would you like the list to display?
+	MAX_CLASSES = 10
+
+	# How many classes per column would you like?
+	# Note: You should keep in mind the size of your game's screen for this.
+	COL_MAX = 1
+
+	# What Alignment would you like the text?
+	# Note: If your COL_MAX is 2 or more you should set this value to 1.
+	ALIGNMENT = 0
+	
+end
+
+#==============================================================================
+# ** Window_KazamaClassList
+#------------------------------------------------------------------------------
+#  This window displays classes
+#==============================================================================
+
+class Window_KazamaClassList < Window_Selectable
+	#--------------------------------------------------------------------------
+	# * Included Modules
+	#--------------------------------------------------------------------------
+	include Kazama_Class_Selection
+	#--------------------------------------------------------------------------
+	# * Object Initialization
+	#--------------------------------------------------------------------------
+	def initialize
+		super(0, 48, Graphics.width, 8 + fitting_height(14))
+		refresh
+		activate.select(0)
+	end
+	#--------------------------------------------------------------------------
+	# * Get Digit Count
+	#--------------------------------------------------------------------------
+	def col_max ; return COL_MAX ; end
+	#--------------------------------------------------------------------------
+  # * Get Number of Items
+  #--------------------------------------------------------------------------
+  def item_max ; return MAX_CLASSES ; end
+  #--------------------------------------------------------------------------
+  # * Draw Item
+  #--------------------------------------------------------------------------
+  def draw_item(index)
+		draw_text(item_rect(index), $data_classes[index + 1].name, ALIGNMENT)
+	end
+end
+
+#==============================================================================
+# ** Scene_KazamaClasses
+#------------------------------------------------------------------------------
+#  This scene process class selection on the classes screen.
+#==============================================================================
+
+class Scene_KazamaClasses < Scene_MenuBase
+	#--------------------------------------------------------------------------
+	# * Prepare
+	#--------------------------------------------------------------------------
+	def prepare(actor_id = 1, retain_exp = true)
+		@actor_id = actor_id
+		@retain_exp = retain_exp
+	end
+	#--------------------------------------------------------------------------
+	# * Start Processing
+	#--------------------------------------------------------------------------
+	def start
+		super
+		@actor = $game_actors[@actor_id]
+		text = sprintf("Class Selection: Choose %s's class", @actor.name)
+		@top_window = Window_Base.new(0, 0, Graphics.width, 48)
+		@top_window.draw_text(@top_window.contents.rect, text, 1)
+		@class_window = Window_KazamaClassList.new
+		@class_window.set_handler(:ok, method(:on_input_ok))
+	end
+	#--------------------------------------------------------------------------
+	# * On Input [OK]
+	#--------------------------------------------------------------------------
+	def on_input_ok
+		@actor.change_class(1 + @class_window.index, @retain_exp)
+		return_scene
+	end
+end
