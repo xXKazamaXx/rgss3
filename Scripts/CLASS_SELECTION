@@ -110,4 +110,4 @@ class Scene_KazamaClasses < Scene_MenuBase
 		@actor.change_class(1 + @class_window.index, @retain_exp)
 		return_scene
 	end
-end
+end 
